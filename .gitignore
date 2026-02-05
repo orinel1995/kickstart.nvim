@@ -2,7 +2,7 @@ tags
 test.sh
 .luarc.json
 nvim
-
+.vscode
 spell/
 
 # You can uncomment this yourself if you want to lock the lazy-lock.json,

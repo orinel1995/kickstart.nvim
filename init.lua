@@ -1,97 +1,9 @@
---[[
-
-=====================================================================
-==================== READ THIS BEFORE CONTINUING ====================
-=====================================================================
-========                                    .-----.          ========
-========         .----------------------.   | === |          ========
-========         |.-""""""""""""""""""-.|   |-----|          ========
-========         ||                    ||   | === |          ========
-========         ||   KICKSTART.NVIM   ||   |-----|          ========
-========         ||                    ||   | === |          ========
-========         ||                    ||   |-----|          ========
-========         ||:Tutor              ||   |:::::|          ========
-========         |'-..................-'|   |____o|          ========
-========         `"")----------------(""`   ___________      ========
-========        /::::::::::|  |::::::::::\  \ no mouse \     ========
-========       /:::========|  |==hjkl==:::\  \ required \    ========
-========      '""""""""""""'  '""""""""""""'  '""""""""""'   ========
-========                                                     ========
-=====================================================================
-=====================================================================
-
-What is Kickstart?
-
-  Kickstart.nvim is *not* a distribution.
-
-  Kickstart.nvim is a starting point for your own configuration.
-    The goal is that you can read every line of code, top-to-bottom, understand
-    what your configuration is doing, and modify it to suit your needs.
-
-    Once you've done that, you can start exploring, configuring and tinkering to
-    make Neovim your own! That might mean leaving Kickstart just the way it is for a while
-    or immediately breaking it into modular pieces. It's up to you!
-
-    If you don't know anything about Lua, I recommend taking some time to read through
-    a guide. One possible example which will only take 10-15 minutes:
-      - https://learnxinyminutes.com/docs/lua/
-
-    After understanding a bit more about Lua, you can use `:help lua-guide` as a
-    reference for how Neovim integrates Lua.
-    - :help lua-guide
-    - (or HTML version): https://neovim.io/doc/user/lua-guide.html
-
-Kickstart Guide:
-
-  TODO: The very first thing you should do is to run the command `:Tutor` in Neovim.
-
-    If you don't know what this means, type the following:
-      - <escape key>
-      - :
-      - Tutor
-      - <enter key>
-
-    (If you already know the Neovim basics, you can skip this step.)
-
-  Once you've completed that, you can continue working through **AND READING** the rest
-  of the kickstart init.lua.
-
-  Next, run AND READ `:help`.
-    This will open up a help window with some basic information
-    about reading, navigating and searching the builtin help documentation.
-
-    This should be the first place you go to look when you're stuck or confused
-    with something. It's one of my favorite Neovim features.
-
-    MOST IMPORTANTLY, we provide a keymap "<space>sh" to [s]earch the [h]elp documentation,
-    which is very useful when you're not exactly sure of what you're looking for.
-
-  I have left several `:help X` comments throughout the init.lua
-    These are hints about where to find more information about the relevant settings,
-    plugins or Neovim features used in Kickstart.
-
-   NOTE: Look for lines like this
-
-    Throughout the file. These are for you, the reader, to help you understand what is happening.
-    Feel free to delete them once you know what you're doing, but they should serve as a guide
-    for when you are first encountering a few different constructs in your Neovim config.
-
-If you experience any errors while trying to install kickstart, run `:checkhealth` for more info.
-
-I hope you enjoy your Neovim journey,
-- TJ
-
-P.S. You can delete this when you're done too. It's your config now! :)
---]]
-
--- Set <space> as the leader key
--- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
@@ -102,10 +14,34 @@ vim.g.have_nerd_font = false
 vim.o.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.o.relativenumber = true
+vim.o.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
+
+-- Use true color in the terminal
+vim.o.termguicolors = true
+
+-- Prefer Git Bash for :terminal and plugins like FTerm
+do
+  local bash = vim.fn.exepath 'bash'
+  if bash == '' and vim.fn.filereadable 'C:\\Git\\bin\\bash.exe' == 1 then
+    bash = 'C:\\Git\\bin\\bash.exe'
+  elseif bash == '' and vim.fn.filereadable 'C:\\Git\\usr\\bin\\bash.exe' == 1 then
+    bash = 'C:\\Git\\usr\\bin\\bash.exe'
+  end
+
+  if bash ~= '' then
+    vim.o.shell = bash
+    vim.env.SHELL = bash
+  end
+
+  if vim.o.shell ~= '' then
+    vim.o.shellcmdflag = '-lc'
+    vim.o.shellquote = ''
+    vim.o.shellxquote = ''
+  end
+end
 
 -- Don't show the mode, since it's already in the status line
 vim.o.showmode = false
@@ -135,6 +71,9 @@ vim.o.updatetime = 250
 -- Decrease mapped sequence wait time
 vim.o.timeoutlen = 300
 
+-- Ensure standard command-line is visible
+vim.o.cmdheight = 1
+
 -- Configure how new splits should be opened
 vim.o.splitright = true
 vim.o.splitbelow = true
@@ -148,7 +87,8 @@ vim.o.splitbelow = true
 --   See `:help lua-options`
 --   and `:help lua-guide-options`
 vim.o.list = true
-vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
+-- Hide special tab markers; keep only trailing spaces and nbsp visible
+vim.opt.listchars = { tab = '  ', trail = '.', nbsp = '+' }
 
 -- Preview substitutions live, as you type!
 vim.o.inccommand = 'split'
@@ -157,7 +97,7 @@ vim.o.inccommand = 'split'
 vim.o.cursorline = true
 
 -- Minimal number of screen lines to keep above and below the cursor.
-vim.o.scrolloff = 10
+vim.o.scrolloff = 5
 
 -- if performing an operation that would fail due to unsaved changes in the buffer (like `:q`),
 -- instead raise a dialog asking if you wish to save the current file(s)
@@ -170,6 +110,13 @@ vim.o.confirm = true
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+
+-- Quick exit from insert mode
+vim.keymap.set('i', 'jk', '<Esc>', { silent = true, desc = 'Exit insert mode' })
+
+-- Keep selection when indenting in visual mode
+vim.keymap.set('v', '<', '<gv')
+vim.keymap.set('v', '>', '>gv')
 
 -- Diagnostic Config & Keymaps
 -- See :help vim.diagnostic.Opts
@@ -213,10 +160,10 @@ vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower win
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
 -- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
--- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
--- vim.keymap.set("n", "<C-S-l>", "<C-w>L", { desc = "Move window to the right" })
--- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
--- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
+vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
+vim.keymap.set("n", "<C-S-l>", "<C-w>L", { desc = "Move window to the right" })
+vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
+vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -257,6 +204,25 @@ rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: Plugins can be added via a link or github org/name. To run setup automatically, use `opts = {}`
   { 'NMAC427/guess-indent.nvim', opts = {} },
+  { -- Auto insert matching brackets/quotes
+    'windwp/nvim-autopairs',
+    event = 'InsertEnter',
+    config = function()
+      local npairs = require 'nvim-autopairs'
+      local Rule = require 'nvim-autopairs.rule'
+
+      npairs.setup {}
+
+      npairs.add_rules {
+        -- Triple quotes for Python docstrings
+        Rule("'''", "'''", 'python'),
+        Rule('"""', '"""', 'python'),
+
+        -- Percent pairs for Django templates
+        Rule('%', '%', { 'htmldjango', 'django' }),
+      }
+    end,
+  },
 
   -- Alternatively, use `config = function() ... end` for full control over the configuration.
   -- If you prefer to call `setup` explicitly, use:
@@ -614,7 +580,7 @@ require('lazy').setup({
       -- You can press `g?` for help in this menu.
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
-        'lua_ls', -- Lua Language server
+        'lua-language-server', -- Lua Language server (mason package name)
         'stylua', -- Used to format Lua code
         -- You can add other tools here that you want Mason to install
       })
@@ -658,36 +624,29 @@ require('lazy').setup({
 
   { -- Autoformat
     'stevearc/conform.nvim',
-    event = { 'BufWritePre' },
     cmd = { 'ConformInfo' },
     keys = {
       {
-        '<leader>f',
+        '<leader>cf',
         function() require('conform').format { async = true, lsp_format = 'fallback' } end,
-        mode = '',
-        desc = '[F]ormat buffer',
+        mode = 'n',
+        desc = '[C]ode [F]ormat buffer',
       },
     },
     opts = {
       notify_on_error = false,
-      format_on_save = function(bufnr)
-        -- Disable "format_on_save lsp_fallback" for languages that don't
-        -- have a well standardized coding style. You can add additional
-        -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true }
-        if disable_filetypes[vim.bo[bufnr].filetype] then
-          return nil
-        else
-          return {
-            timeout_ms = 500,
-            lsp_format = 'fallback',
-          }
-        end
-      end,
+      formatters = {
+        sqlformat = {
+          command = 'sqlformat',
+          args = { '-r', '-k', 'upper', '-' },
+          stdin = true,
+        },
+      },
       formatters_by_ft = {
         lua = { 'stylua' },
+        sql = { 'sqlformat' },
         -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
+        python = { 'isort', 'autopep8' },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
@@ -793,20 +752,69 @@ require('lazy').setup({
     -- change the command in the config to whatever the name of that colorscheme is.
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
+    'rebelot/kanagawa.nvim',
     priority = 1000, -- Make sure to load this before all the other start plugins.
     config = function()
-      ---@diagnostic disable-next-line: missing-fields
-      require('tokyonight').setup {
-        styles = {
-          comments = { italic = false }, -- Disable italics in comments
+      require('kanagawa').setup {
+        commentstyle = { italic = false },
+        keywordStyle = { italic = false },
+        statementStyle = { italic = false },
+        typeStyle = { italic = false },
+        functionStyle = { italic = false },
+        colors = {
+          theme = { comment = '#ff9e3b' },
         },
+        overrides = function(colors)
+          return {
+            ['@comment'] = { fg = '#ff9e3b', italic = false },
+            ['@comment.documentation'] = { fg = '#ff9e3b', italic = false },
+            Comment = { fg = '#ff9e3b', italic = false },
+          }
+        end,
       }
+      vim.cmd.colorscheme 'kanagawa'
 
-      -- Load the colorscheme here.
-      -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+      -- Force-disable bold for keywords/types/functions (incl. LSP semantic tokens)
+      local function disable_bold()
+        local groups = {
+          'Keyword',
+          'Statement',
+          'Function',
+          'Type',
+          '@keyword',
+          '@keyword.function',
+          '@keyword.operator',
+          '@function',
+          '@function.builtin',
+          '@function.method',
+          '@type',
+          '@type.builtin',
+          '@type.definition',
+          '@type.qualifier',
+          '@constructor',
+          '@lsp.type.class',
+          '@lsp.type.function',
+          '@lsp.type.method',
+          '@lsp.type.namespace',
+          '@lsp.type.type',
+          '@lsp.type.typeParameter',
+          '@lsp.type.keyword',
+        }
+        for _, group in ipairs(groups) do
+          local ok, hl = pcall(vim.api.nvim_get_hl, 0, { name = group, link = false })
+          if ok then
+            hl.bold = false
+            vim.api.nvim_set_hl(0, group, hl)
+          else
+            vim.api.nvim_set_hl(0, group, { bold = false })
+          end
+        end
+      end
+
+      disable_bold()
+      vim.api.nvim_create_autocmd('ColorScheme', {
+        callback = disable_bold,
+      })
     end,
   },
 
@@ -822,7 +830,39 @@ require('lazy').setup({
       --  - va)  - [V]isually select [A]round [)]paren
       --  - yinq - [Y]ank [I]nside [N]ext [Q]uote
       --  - ci'  - [C]hange [I]nside [']quote
-      require('mini.ai').setup { n_lines = 500 }
+      local ai = require 'mini.ai'
+      ai.setup {
+        n_lines = 500,
+        custom_textobjects = {
+          f = ai.gen_spec.treesitter { a = '@function.outer', i = '@function.inner' },
+          c = ai.gen_spec.treesitter { a = '@class.outer', i = '@class.inner' },
+          o = ai.gen_spec.pair('\n\n', '\n\n'),
+          a = ai.gen_spec.treesitter { a = '@parameter.outer', i = '@parameter.inner' },
+          t = ai.gen_spec.treesitter { a = '@tag.outer', i = '@tag.inner' },
+          s = ai.gen_spec.treesitter { a = '@string.outer', i = '@string.inner' },
+          ['('] = ai.gen_spec.pair('(', ')'),
+          ['['] = ai.gen_spec.pair('[', ']'),
+          ['{'] = ai.gen_spec.pair('{', '}'),
+        },
+      }
+
+      -- Ensure Python textobjects are available even if query files are missing
+      pcall(vim.treesitter.query.set, 'python', 'textobjects', [[
+        (function_definition) @function.outer
+        (function_definition
+          body: (block) @function.inner)
+
+        (class_definition) @class.outer
+        (class_definition
+          body: (block) @class.inner)
+
+        (parameters (identifier) @parameter.inner) @parameter.outer
+        (parameters (typed_parameter (identifier) @parameter.inner)) @parameter.outer
+        (parameters (default_parameter (identifier) @parameter.inner)) @parameter.outer
+
+        (string) @string.outer
+        (string (string_content) @string.inner)
+      ]])
 
       -- Add/delete/replace surroundings (brackets, quotes, etc.)
       --
@@ -849,14 +889,110 @@ require('lazy').setup({
     end,
   },
 
+  { -- Subtle indent guides (VSCode-like)
+    'lukas-reineke/indent-blankline.nvim',
+    main = 'ibl',
+    opts = {
+      indent = { char = '│', highlight = 'IblIndent' },
+      scope = { enabled = false },
+    },
+  },
+
+  { -- Floating cmdline and search UI
+    'folke/noice.nvim',
+    event = 'VeryLazy',
+    dependencies = {
+      'MunifTanjim/nui.nvim',
+      'rcarriga/nvim-notify',
+    },
+    opts = {
+      cmdline = {
+        enabled = true,
+        view = 'cmdline_popup',
+      },
+      messages = { enabled = true },
+      popupmenu = { enabled = true },
+      views = {
+        cmdline_popup = {
+          border = { style = 'none' },
+          position = { row = '100%', col = '50%' },
+          size = { width = 60, height = 'auto' },
+        },
+      },
+    },
+  },
+
+  { -- Floating terminal
+    'numToStr/FTerm.nvim',
+    event = 'VimEnter',
+    opts = {
+      cmd = { 'C:\\Git\\bin\\bash.exe', '--login', '-i' },
+      border = 'rounded',
+      dimensions = { height = 0.9, width = 0.9 },
+    },
+    keys = {
+      {
+        '<leader>tt',
+        function() require('FTerm').toggle() end,
+        desc = '[T]oggle [T]erminal',
+      },
+      {
+        '<Esc>',
+        function() require('FTerm').toggle() end,
+        mode = 't',
+        desc = 'Close floating terminal',
+      },
+    },
+  },
+
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
-    config = function()
-      local filetypes = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' }
-      require('nvim-treesitter').install(filetypes)
+    dependencies = { 'nvim-treesitter/nvim-treesitter-textobjects' },
+    build = ':TSUpdate',
+    opts = {
+      ensure_installed = {
+        'bash',
+        'c',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'python',
+        'query',
+        'sql',
+        'vim',
+        'vimdoc',
+      },
+      highlight = {
+        enable = true,
+        additional_vim_regex_highlighting = true,
+      },
+      textobjects = {
+        select = {
+          enable = true,
+          lookahead = true,
+          keymaps = {
+            ['if'] = '@function.inner',
+            ['af'] = '@function.outer',
+            ['ic'] = '@class.inner',
+            ['ac'] = '@class.outer',
+            ['ia'] = '@parameter.inner',
+            ['aa'] = '@parameter.outer',
+            ['is'] = '@string.inner',
+            ['as'] = '@string.outer',
+          },
+        },
+      },
+    },
+    config = function(_, opts)
+      require('nvim-treesitter').setup(opts)
+
+      -- Ensure Treesitter starts for relevant filetypes
       vim.api.nvim_create_autocmd('FileType', {
-        pattern = filetypes,
-        callback = function() vim.treesitter.start() end,
+        pattern = { 'python', 'sql', 'html', 'lua', 'vim', 'query', 'markdown', 'markdown_inline', 'bash', 'c', 'diff' },
+        callback = function() pcall(vim.treesitter.start, 0) end,
       })
     end,
   },
