@@ -294,11 +294,13 @@ require('lazy').setup({
       local capabilities = require('blink.cmp').get_lsp_capabilities()
 
       local servers = {
+        pyright = {},
       }
 
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'lua-language-server', -- Lua Language server (mason package name)
+        'pyright', -- Python LSP
         'stylua', -- Used to format Lua code
       })
 
@@ -384,7 +386,7 @@ require('lazy').setup({
     opts = {
       keymap = {
         preset = 'default',
-
+        ['<C-space>'] = {'show'},
       },
 
       appearance = {
@@ -392,7 +394,11 @@ require('lazy').setup({
       },
 
       completion = {
-        documentation = { auto_show = false, auto_show_delay_ms = 500 },
+        documentation = {
+          auto_show = false,
+          draw = function() end, -- never render docs unless explicitly opened elsewhere
+          window = { max_height = 0, max_width = 0 },
+        },
       },
 
       sources = {
@@ -403,7 +409,7 @@ require('lazy').setup({
 
       fuzzy = { implementation = 'lua' },
 
-      signature = { enabled = true },
+      signature = { enabled = true, window = { show_documentation = false } },
     },
   },
 
@@ -546,6 +552,7 @@ require('lazy').setup({
       ]])
 
       require('mini.surround').setup()
+      vim.keymap.set('x', 'S', [[:<C-u>lua MiniSurround.add('visual')<CR>]], { silent = true, desc = 'Surround visual selection' })
 
       local statusline = require 'mini.statusline'
       statusline.setup { use_icons = vim.g.have_nerd_font }
@@ -575,6 +582,10 @@ require('lazy').setup({
       cmdline = {
         enabled = true,
         view = 'cmdline_popup',
+      },
+      lsp = {
+        signature = { enabled = false },
+        hover = { enabled = false },
       },
       messages = { enabled = true },
       popupmenu = { enabled = true },
